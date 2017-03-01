@@ -1,14 +1,19 @@
 package com.roll.clientserverhttp_fragments;
 
+import android.app.Fragment;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -29,7 +34,7 @@ import com.squareup.okhttp.Response;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class ContactListFrag extends AppCompatActivity implements ContactAdapter.ViewClickListener {
+public class ContactListFrag extends Fragment implements ContactAdapter.ViewClickListener {
 
     private ListView listView;
     private String token;
@@ -37,44 +42,51 @@ public class ContactListFrag extends AppCompatActivity implements ContactAdapter
     private ContactAdapter adapter;
     private ProgressBar progressBarContact;
     private TextView txtEmpty;
+    private Context context;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.frag_contact_list);
+    }
 
-        listView = (ListView) findViewById(R.id.list_contact);
-        txtEmpty = (TextView) findViewById(R.id.txt_empty);
-        progressBarContact = (ProgressBar) findViewById(R.id.progress_contacts);
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.frag_contact_list, null);
+        return view;
+    }
 
-        SharedPreferences sharedPreferences = getSharedPreferences("AUTH", MODE_PRIVATE);
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        listView = (ListView) view.findViewById(R.id.list_contact);
+        txtEmpty = (TextView) view.findViewById(R.id.txt_empty);
+        progressBarContact = (ProgressBar) view.findViewById(R.id.progress_contacts);
+        context = getActivity().getApplicationContext();
+
+        SharedPreferences sharedPreferences = context.getSharedPreferences("AUTH", Context.MODE_PRIVATE);
         token = sharedPreferences.getString("TOKEN", "");
 
         initAdapter();
     }
 
     private void initAdapter() {
-        adapter = new ContactAdapter(this, contacts.getContacts(), this);
+        adapter = new ContactAdapter(context, contacts.getContacts(), this);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 User user = (User) adapter.getItem(position);
-                Toast.makeText(ContactListFrag.this, "Was clicket position " + position, Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Was clicket position " + position, Toast.LENGTH_SHORT).show();
             }
         });
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        new ContactsAsyncTask().execute();
-    }
-
-    @Override
     public void btnViewClick(View view, int position) {
         User user = (User) adapter.getItem(position);
-        Intent intent = new Intent(ContactListFrag.this, ViewContactFrag.class);
+        Intent intent = new Intent(context, ViewContactFrag.class);
         intent.putExtra("USER", new Gson().toJson(user));
         intent.putExtra("TOKEN", token);
         startActivity(intent);
@@ -138,28 +150,26 @@ public class ContactListFrag extends AppCompatActivity implements ContactAdapter
         }
     }
 
-
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_contact_list, menu);
-        return super.onCreateOptionsMenu(menu);
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_contact_list, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.item_logout) {
-            SharedPreferences sPref = getSharedPreferences("AUTH", MODE_PRIVATE);
+            SharedPreferences sPref = context.getSharedPreferences("AUTH", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sPref.edit();
             editor.clear();
             editor.commit();
 
-            Intent intent = new Intent(this, LoginFrag.class);
+            Intent intent = new Intent(context, LoginFrag.class);
             startActivity(intent);
-            finish();
         }
 
         if (item.getItemId() == R.id.item_add) {
-            Intent intent = new Intent(this, AddContactFrag.class);
+            Intent intent = new Intent(context, AddContactFrag.class);
             intent.putExtra("TOKEN", token);
             startActivity(intent);
         }
@@ -219,7 +229,7 @@ public class ContactListFrag extends AppCompatActivity implements ContactAdapter
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             progressBarContact.setVisibility(View.GONE);
-            Toast.makeText(ContactListFrag.this, s, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
             if ("Delete all contacts, OK!".equals(s)) {
                 txtEmpty.setVisibility(View.VISIBLE);
                 adapter.notifyDataSetChanged();
