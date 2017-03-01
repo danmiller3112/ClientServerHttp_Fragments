@@ -13,6 +13,8 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.roll.clientserverhttp_fragments.entities.User;
+import com.roll.clientserverhttp_fragments.model.HttpProvider;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -22,7 +24,7 @@ import com.squareup.okhttp.Response;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class ViewContactActivity extends AppCompatActivity {
+public class ViewContactFrag extends AppCompatActivity {
 
     private EditText nameView, emailView, phoneView, descView;
     private ProgressBar progressView;
@@ -34,7 +36,7 @@ public class ViewContactActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_view_contact);
+        setContentView(R.layout.frag_view_contact);
 
         nameView = (EditText) findViewById(R.id.view_name);
         emailView = (EditText) findViewById(R.id.view_email);
@@ -80,7 +82,7 @@ public class ViewContactActivity extends AppCompatActivity {
             case R.id.item_save:
                 phone = String.valueOf(phoneView.getText());
                 if ("".equals(phone)) {
-                    Toast.makeText(ViewContactActivity.this, "Phone number is EMPTY!!!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(ViewContactFrag.this, "Phone number is EMPTY!!!", Toast.LENGTH_LONG).show();
                 } else {
                     editItem.setVisible(true);
                     saveItem.setVisible(false);
@@ -149,7 +151,7 @@ public class ViewContactActivity extends AppCompatActivity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             progressView.setVisibility(View.INVISIBLE);
-            Toast.makeText(ViewContactActivity.this, s, Toast.LENGTH_SHORT).show();
+            Toast.makeText(ViewContactFrag.this, s, Toast.LENGTH_SHORT).show();
             finish();
         }
     }

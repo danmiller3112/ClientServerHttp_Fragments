@@ -13,6 +13,8 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.roll.clientserverhttp_fragments.entities.User;
+import com.roll.clientserverhttp_fragments.model.HttpProvider;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -22,7 +24,7 @@ import com.squareup.okhttp.Response;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class AddContactActivity extends AppCompatActivity {
+public class AddContactFrag extends AppCompatActivity {
 
     private EditText inputName, inputEmail, inputPhone, inputDesc;
     private String token, phone;
@@ -34,7 +36,7 @@ public class AddContactActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_contact);
+        setContentView(R.layout.frag_add_contact);
 
         inputName = (EditText) findViewById(R.id.input_name);
         inputEmail = (EditText) findViewById(R.id.input_email);
@@ -62,7 +64,7 @@ public class AddContactActivity extends AppCompatActivity {
             String desc = String.valueOf(inputDesc.getText());
             String name = String.valueOf(inputName.getText());
             if ("".equals(phone) || "".equals(name)) {
-                Toast.makeText(AddContactActivity.this, "Name or phone is empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AddContactFrag.this, "Name or phone is empty", Toast.LENGTH_SHORT).show();
             } else {
                 Gson gson = new Gson();
                 jsonUser = gson.toJson(new User(name, email, phone, desc, Long.valueOf(phone)));
@@ -130,7 +132,7 @@ public class AddContactActivity extends AppCompatActivity {
             inputEmail.setEnabled(true);
             inputName.setEnabled(true);
             inputPhone.setEnabled(true);
-            Toast.makeText(AddContactActivity.this, s, Toast.LENGTH_SHORT).show();
+            Toast.makeText(AddContactFrag.this, s, Toast.LENGTH_SHORT).show();
             if ("Add OK!".equals(s)) {
                 finish();
             }

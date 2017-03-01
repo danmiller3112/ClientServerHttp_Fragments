@@ -13,6 +13,9 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.roll.clientserverhttp_fragments.entities.Auth;
+import com.roll.clientserverhttp_fragments.entities.AuthResponse;
+import com.roll.clientserverhttp_fragments.model.HttpProvider;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -22,7 +25,7 @@ import com.squareup.okhttp.Response;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
+public class LoginFrag extends AppCompatActivity implements View.OnClickListener {
 
     private EditText inputLogin, inputPass;
     private Button btnLogin, btnRegister;
@@ -32,7 +35,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.frag_login);
 
         inputLogin = (EditText) findViewById(R.id.input_login);
         inputPass = (EditText) findViewById(R.id.input_password);
@@ -153,7 +156,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             progressBarLogin.setVisibility(View.GONE);
             inputLogin.setEnabled(true);
             inputPass.setEnabled(true);
-            Toast.makeText(LoginActivity.this, s, Toast.LENGTH_SHORT).show();
+            Toast.makeText(LoginFrag.this, s, Toast.LENGTH_SHORT).show();
             if (s.equals("Login OK!")) {
                 startContactList();
                 finish();
@@ -228,7 +231,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             inputLogin.setEnabled(true);
             inputPass.setEnabled(true);
             progressBarLogin.setVisibility(View.GONE);
-            Toast.makeText(LoginActivity.this, s, Toast.LENGTH_SHORT).show();
+            Toast.makeText(LoginFrag.this, s, Toast.LENGTH_SHORT).show();
             if (s.equals("Registration OK!")) {
                 startContactList();
                 finish();

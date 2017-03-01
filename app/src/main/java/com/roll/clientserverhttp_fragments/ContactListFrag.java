@@ -16,6 +16,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
+import com.roll.clientserverhttp_fragments.adapters.ContactAdapter;
+import com.roll.clientserverhttp_fragments.entities.Contacts;
+import com.roll.clientserverhttp_fragments.entities.User;
+import com.roll.clientserverhttp_fragments.model.HttpProvider;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
@@ -25,7 +29,7 @@ import com.squareup.okhttp.Response;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class ContactListActivity extends AppCompatActivity implements ContactAdapter.ViewClickListener {
+public class ContactListFrag extends AppCompatActivity implements ContactAdapter.ViewClickListener {
 
     private ListView listView;
     private String token;
@@ -37,7 +41,7 @@ public class ContactListActivity extends AppCompatActivity implements ContactAda
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_contact_list);
+        setContentView(R.layout.frag_contact_list);
 
         listView = (ListView) findViewById(R.id.list_contact);
         txtEmpty = (TextView) findViewById(R.id.txt_empty);
@@ -56,7 +60,7 @@ public class ContactListActivity extends AppCompatActivity implements ContactAda
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 User user = (User) adapter.getItem(position);
-                Toast.makeText(ContactListActivity.this, "Was clicket position " + position, Toast.LENGTH_SHORT).show();
+                Toast.makeText(ContactListFrag.this, "Was clicket position " + position, Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -70,7 +74,7 @@ public class ContactListActivity extends AppCompatActivity implements ContactAda
     @Override
     public void btnViewClick(View view, int position) {
         User user = (User) adapter.getItem(position);
-        Intent intent = new Intent(ContactListActivity.this, ViewContactActivity.class);
+        Intent intent = new Intent(ContactListFrag.this, ViewContactFrag.class);
         intent.putExtra("USER", new Gson().toJson(user));
         intent.putExtra("TOKEN", token);
         startActivity(intent);
@@ -149,13 +153,13 @@ public class ContactListActivity extends AppCompatActivity implements ContactAda
             editor.clear();
             editor.commit();
 
-            Intent intent = new Intent(this, LoginActivity.class);
+            Intent intent = new Intent(this, LoginFrag.class);
             startActivity(intent);
             finish();
         }
 
         if (item.getItemId() == R.id.item_add) {
-            Intent intent = new Intent(this, AddContactActivity.class);
+            Intent intent = new Intent(this, AddContactFrag.class);
             intent.putExtra("TOKEN", token);
             startActivity(intent);
         }
@@ -215,7 +219,7 @@ public class ContactListActivity extends AppCompatActivity implements ContactAda
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             progressBarContact.setVisibility(View.GONE);
-            Toast.makeText(ContactListActivity.this, s, Toast.LENGTH_SHORT).show();
+            Toast.makeText(ContactListFrag.this, s, Toast.LENGTH_SHORT).show();
             if ("Delete all contacts, OK!".equals(s)) {
                 txtEmpty.setVisibility(View.VISIBLE);
                 adapter.notifyDataSetChanged();
