@@ -9,6 +9,7 @@ import com.roll.clientserverhttp_fragments.model.CallbackListener;
 public class MainActivity extends AppCompatActivity implements CallbackListener {
 
     private FragmentTransaction transaction;
+    private boolean listState = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,17 +30,33 @@ public class MainActivity extends AppCompatActivity implements CallbackListener 
             case "SAVE_OK":
             case "ADD_OK":
                 transaction.replace(R.id.frag_container, new ContactListFrag(), "LIST");
+                listState = true;
                 break;
             case "LOGOUT":
                 transaction.replace(R.id.frag_container, new LoginFrag(), "LOGIN");
                 break;
             case "VIEW":
                 transaction.replace(R.id.frag_container, new ViewContactFrag(), "VIEW");
+                listState = false;
                 break;
             case "ADD":
                 transaction.replace(R.id.frag_container, new AddContactFrag(), "ADD");
+                listState = false;
                 break;
         }
         transaction.commit();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (listState) {
+            super.onBackPressed();
+        } else {
+            transaction = getFragmentManager().beginTransaction();
+            transaction.replace(R.id.frag_container, new ContactListFrag(), "LIST");
+            transaction.commit();
+            listState = true;
+        }
+
     }
 }
