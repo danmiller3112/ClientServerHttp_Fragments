@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.google.gson.Gson;
 import com.roll.clientserverhttp_fragments.entities.Auth;
 import com.roll.clientserverhttp_fragments.entities.AuthResponse;
+import com.roll.clientserverhttp_fragments.model.CallbackListener;
 import com.roll.clientserverhttp_fragments.model.HttpProvider;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -36,25 +37,22 @@ public class LoginFrag extends Fragment implements View.OnClickListener {
     private ProgressBar progressBarLogin;
     private String login, pass;
     private Context context;
-    private LoginFragmentListener listener;
+    private CallbackListener listener;
 
-    interface LoginFragmentListener {
-        void loginOk(String result);
-    }
 
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
-        listener = (LoginFragmentListener) activity;
+        listener = (CallbackListener) activity;
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        if (context instanceof LoginFragmentListener) {
-            listener = (LoginFragmentListener) context;
+        if (context instanceof CallbackListener) {
+            listener = (CallbackListener) context;
         } else {
-            throw new RuntimeException("Context must implements LoginFragmentListener");
+            throw new RuntimeException("Context must implements CallbackListener");
         }
     }
 
@@ -191,7 +189,7 @@ public class LoginFrag extends Fragment implements View.OnClickListener {
             inputPass.setEnabled(true);
             Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
             if (s.equals("Login OK!")) {
-                listener.loginOk("OK");
+                listener.sameAction("LOGIN_OK");
             }
         }
     }
@@ -265,7 +263,7 @@ public class LoginFrag extends Fragment implements View.OnClickListener {
             progressBarLogin.setVisibility(View.GONE);
             Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
             if (s.equals("Registration OK!")) {
-                listener.loginOk("OK");
+                listener.sameAction("LOGIN_OK");
             }
         }
     }

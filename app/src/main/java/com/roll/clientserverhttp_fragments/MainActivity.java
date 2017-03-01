@@ -3,9 +3,10 @@ package com.roll.clientserverhttp_fragments;
 import android.app.FragmentTransaction;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.Toast;
 
-public class MainActivity extends AppCompatActivity implements LoginFrag.LoginFragmentListener {
+import com.roll.clientserverhttp_fragments.model.CallbackListener;
+
+public class MainActivity extends AppCompatActivity implements CallbackListener {
 
     private FragmentTransaction transaction;
 
@@ -21,10 +22,18 @@ public class MainActivity extends AppCompatActivity implements LoginFrag.LoginFr
 
 
     @Override
-    public void loginOk(String result) {
-        Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+    public void sameAction(String result) {
         transaction = getFragmentManager().beginTransaction();
-        transaction.replace(R.id.frag_container, new ContactListFrag(), "LIST");
-        transaction.commit();
+        switch (result) {
+            case "LOGIN_OK":
+                transaction.replace(R.id.frag_container, new ContactListFrag(), "LIST");
+                transaction.commit();
+                break;
+            case "LOGOUT":
+                transaction.replace(R.id.frag_container, new LoginFrag(), "LOGIN");
+                transaction.commit();
+                break;
+        }
+
     }
 }

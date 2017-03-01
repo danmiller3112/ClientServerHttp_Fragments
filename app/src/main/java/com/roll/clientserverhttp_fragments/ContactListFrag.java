@@ -1,5 +1,6 @@
 package com.roll.clientserverhttp_fragments;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -24,6 +25,7 @@ import com.google.gson.Gson;
 import com.roll.clientserverhttp_fragments.adapters.ContactAdapter;
 import com.roll.clientserverhttp_fragments.entities.Contacts;
 import com.roll.clientserverhttp_fragments.entities.User;
+import com.roll.clientserverhttp_fragments.model.CallbackListener;
 import com.roll.clientserverhttp_fragments.model.HttpProvider;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -43,6 +45,23 @@ public class ContactListFrag extends Fragment implements ContactAdapter.ViewClic
     private ProgressBar progressBarContact;
     private TextView txtEmpty;
     private Context context;
+    private CallbackListener listener;
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        listener = (CallbackListener) activity;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof CallbackListener) {
+            listener = (CallbackListener) context;
+        } else {
+            throw new RuntimeException("Context must implements CallbackListener");
+        }
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -69,6 +88,7 @@ public class ContactListFrag extends Fragment implements ContactAdapter.ViewClic
         token = sharedPreferences.getString("TOKEN", "");
 
         initAdapter();
+        new ContactsAsyncTask().execute();
     }
 
     private void initAdapter() {
@@ -164,14 +184,11 @@ public class ContactListFrag extends Fragment implements ContactAdapter.ViewClic
             editor.clear();
             editor.commit();
 
-            Intent intent = new Intent(context, LoginFrag.class);
-            startActivity(intent);
+            listener.sameAction("LOGOUT");
         }
 
         if (item.getItemId() == R.id.item_add) {
-            Intent intent = new Intent(context, AddContactFrag.class);
-            intent.putExtra("TOKEN", token);
-            startActivity(intent);
+            listener.sameAction("ADD");
         }
 
         if (item.getItemId() == R.id.item_delete_all) {
