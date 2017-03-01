@@ -3,7 +3,6 @@ package com.roll.clientserverhttp_fragments;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -106,10 +105,12 @@ public class ContactListFrag extends Fragment implements ContactAdapter.ViewClic
     @Override
     public void btnViewClick(View view, int position) {
         User user = (User) adapter.getItem(position);
-        Intent intent = new Intent(context, ViewContactFrag.class);
-        intent.putExtra("USER", new Gson().toJson(user));
-        intent.putExtra("TOKEN", token);
-        startActivity(intent);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("AUTH", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
+        editor.putString("USER", new Gson().toJson(user));
+        editor.commit();
+        Log.e("btnViewClick", "VIEW");
+        listener.sameAction("VIEW");
     }
 
     private class ContactsAsyncTask extends AsyncTask<Void, Void, String> {

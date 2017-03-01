@@ -1,19 +1,26 @@
 package com.roll.clientserverhttp_fragments;
 
-import android.content.Intent;
+import android.app.Activity;
+import android.app.Fragment;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.roll.clientserverhttp_fragments.entities.User;
+import com.roll.clientserverhttp_fragments.model.CallbackListener;
 import com.roll.clientserverhttp_fragments.model.HttpProvider;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -24,7 +31,7 @@ import com.squareup.okhttp.Response;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class ViewContactFrag extends AppCompatActivity {
+public class ViewContactFrag extends Fragment {
 
     private EditText nameView, emailView, phoneView, descView;
     private ProgressBar progressView;
@@ -32,23 +39,52 @@ public class ViewContactFrag extends AppCompatActivity {
     private String name, email, phone, desc;
     private MenuItem editItem, saveItem;
     private User user;
+    private Context context;
+    private CallbackListener listener;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.frag_view_contact);
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        listener = (CallbackListener) activity;
+    }
 
-        nameView = (EditText) findViewById(R.id.view_name);
-        emailView = (EditText) findViewById(R.id.view_email);
-        phoneView = (EditText) findViewById(R.id.view_phone);
-        descView = (EditText) findViewById(R.id.view_desc);
-        progressView = (ProgressBar) findViewById(R.id.progress_view);
-
-        Intent intent = getIntent();
-        if (intent.getExtras() != null) {
-            userJson = intent.getExtras().getString("USER", "");
-            token = intent.getExtras().getString("TOKEN", "");
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof CallbackListener) {
+            listener = (CallbackListener) context;
+        } else {
+            throw new RuntimeException("Context must implements CallbackListener");
         }
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
+        super.onCreate(savedInstanceState);
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.frag_view_contact, null);
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        nameView = (EditText) view.findViewById(R.id.view_name);
+        emailView = (EditText) view.findViewById(R.id.view_email);
+        phoneView = (EditText) view.findViewById(R.id.view_phone);
+        descView = (EditText) view.findViewById(R.id.view_desc);
+        progressView = (ProgressBar) view.findViewById(R.id.progress_view);
+
+        context = getActivity().getApplicationContext();
+
+        SharedPreferences sharedPreferences = context.getSharedPreferences("AUTH", Context.MODE_PRIVATE);
+        token = sharedPreferences.getString("TOKEN", "");
+        userJson = sharedPreferences.getString("USER", "");
 
         Gson gson = new Gson();
         user = gson.fromJson(userJson, User.class);
@@ -60,12 +96,12 @@ public class ViewContactFrag extends AppCompatActivity {
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_view, menu);
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_view, menu);
         editItem = menu.findItem(R.id.item_edit);
         saveItem = menu.findItem(R.id.item_save);
         saveItem.setVisible(false);
-        return super.onCreateOptionsMenu(menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -82,7 +118,7 @@ public class ViewContactFrag extends AppCompatActivity {
             case R.id.item_save:
                 phone = String.valueOf(phoneView.getText());
                 if ("".equals(phone)) {
-                    Toast.makeText(ViewContactFrag.this, "Phone number is EMPTY!!!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, "Phone number is EMPTY!!!", Toast.LENGTH_LONG).show();
                 } else {
                     editItem.setVisible(true);
                     saveItem.setVisible(false);
@@ -151,8 +187,10 @@ public class ViewContactFrag extends AppCompatActivity {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             progressView.setVisibility(View.INVISIBLE);
-            Toast.makeText(ViewContactFrag.this, s, Toast.LENGTH_SHORT).show();
-            finish();
+            Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
+            if ("Edit OK!".equals(s)) {
+                listener.sameAction("SAVE_OK");
+            }
         }
     }
 
