@@ -1,19 +1,26 @@
 package com.roll.clientserverhttp_fragments;
 
+import android.app.Activity;
+import android.app.Fragment;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.roll.clientserverhttp_fragments.entities.User;
+import com.roll.clientserverhttp_fragments.model.CallbackListener;
 import com.roll.clientserverhttp_fragments.model.HttpProvider;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.OkHttpClient;
@@ -24,36 +31,64 @@ import com.squareup.okhttp.Response;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class AddContactFrag extends AppCompatActivity {
+public class AddContactFrag extends Fragment {
 
     private EditText inputName, inputEmail, inputPhone, inputDesc;
     private String token, phone;
     private String jsonUser;
     private MenuItem addConItem;
     private ProgressBar progressBarSave;
-
+    private Context context;
+    private CallbackListener listener;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        listener = (CallbackListener) activity;
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof CallbackListener) {
+            listener = (CallbackListener) context;
+        } else {
+            throw new RuntimeException("Context must implements CallbackListener");
+        }
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.frag_add_contact);
+    }
 
-        inputName = (EditText) findViewById(R.id.input_name);
-        inputEmail = (EditText) findViewById(R.id.input_email);
-        inputPhone = (EditText) findViewById(R.id.input_phone);
-        inputDesc = (EditText) findViewById(R.id.input_desc);
-        progressBarSave = (ProgressBar) findViewById(R.id.progress_save);
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.frag_add_contact, null);
+        return view;
+    }
 
-        SharedPreferences sharedPreferences = getSharedPreferences("AUTH", MODE_PRIVATE);
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        inputName = (EditText) view.findViewById(R.id.input_name);
+        inputEmail = (EditText) view.findViewById(R.id.input_email);
+        inputPhone = (EditText) view.findViewById(R.id.input_phone);
+        inputDesc = (EditText) view.findViewById(R.id.input_desc);
+        progressBarSave = (ProgressBar) view.findViewById(R.id.progress_save);
+        context = getActivity().getApplicationContext();
+
+        SharedPreferences sharedPreferences = context.getSharedPreferences("AUTH", Context.MODE_PRIVATE);
         token = sharedPreferences.getString("TOKEN", "");
 
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_add, menu);
-        addConItem = (MenuItem) findViewById(R.id.item_add_contact);
-        return super.onCreateOptionsMenu(menu);
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        inflater.inflate(R.menu.menu_add, menu);
+        addConItem = menu.findItem(R.id.item_add_contact);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -64,7 +99,7 @@ public class AddContactFrag extends AppCompatActivity {
             String desc = String.valueOf(inputDesc.getText());
             String name = String.valueOf(inputName.getText());
             if ("".equals(phone) || "".equals(name)) {
-                Toast.makeText(AddContactFrag.this, "Name or phone is empty", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "Name or phone is empty", Toast.LENGTH_SHORT).show();
             } else {
                 Gson gson = new Gson();
                 jsonUser = gson.toJson(new User(name, email, phone, desc, Long.valueOf(phone)));
@@ -132,9 +167,9 @@ public class AddContactFrag extends AppCompatActivity {
             inputEmail.setEnabled(true);
             inputName.setEnabled(true);
             inputPhone.setEnabled(true);
-            Toast.makeText(AddContactFrag.this, s, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
             if ("Add OK!".equals(s)) {
-                finish();
+                listener.sameAction("ADD_OK");
             }
         }
     }
