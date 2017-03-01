@@ -1,12 +1,16 @@
 package com.roll.clientserverhttp_fragments;
 
-import android.content.Intent;
+import android.app.Activity;
+import android.app.Fragment;
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -25,31 +29,60 @@ import com.squareup.okhttp.Response;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
-public class LoginFrag extends AppCompatActivity implements View.OnClickListener {
+public class LoginFrag extends Fragment implements View.OnClickListener {
 
     private EditText inputLogin, inputPass;
     private Button btnLogin, btnRegister;
     private ProgressBar progressBarLogin;
     private String login, pass;
+    private Context context;
+    private LoginFragmentListener listener;
+
+    interface LoginFragmentListener {
+        void loginOk(String result);
+    }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.frag_login);
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+        listener = (LoginFragmentListener) activity;
+    }
 
-        inputLogin = (EditText) findViewById(R.id.input_login);
-        inputPass = (EditText) findViewById(R.id.input_password);
-        btnLogin = (Button) findViewById(R.id.btn_login);
-        btnRegister = (Button) findViewById(R.id.btn_register);
-        progressBarLogin = (ProgressBar) findViewById(R.id.progress_login);
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof LoginFragmentListener) {
+            listener = (LoginFragmentListener) context;
+        } else {
+            throw new RuntimeException("Context must implements LoginFragmentListener");
+        }
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.frag_login, null);
+        return view;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        inputLogin = (EditText) view.findViewById(R.id.input_login);
+        inputPass = (EditText) view.findViewById(R.id.input_password);
+        btnLogin = (Button) view.findViewById(R.id.btn_login);
+        btnRegister = (Button) view.findViewById(R.id.btn_register);
+        progressBarLogin = (ProgressBar) view.findViewById(R.id.progress_login);
         btnLogin.setOnClickListener(this);
         btnRegister.setOnClickListener(this);
+
+        context = getActivity().getApplicationContext();
 
         init();
     }
 
     private void init() {
-        SharedPreferences sharedPreferences = getSharedPreferences("AUTH", MODE_PRIVATE);
+        SharedPreferences sharedPreferences = context.getSharedPreferences("AUTH", Context.MODE_PRIVATE);
         login = sharedPreferences.getString("LOGIN", "");
         pass = sharedPreferences.getString("PASS", "");
         if ("".equals(login) || "".equals(pass)) {
@@ -128,7 +161,7 @@ public class LoginFrag extends AppCompatActivity implements View.OnClickListener
                     String jsonResponse = response.body().string();
                     Log.d("LOGIN", jsonResponse);
                     AuthResponse authResponse = gson.fromJson(jsonResponse, AuthResponse.class);
-                    SharedPreferences sPref = getSharedPreferences("AUTH", MODE_PRIVATE);
+                    SharedPreferences sPref = context.getSharedPreferences("AUTH", Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sPref.edit();
                     editor.putString("TOKEN", authResponse.getToken());
                     editor.putString("LOGIN", login);
@@ -156,10 +189,9 @@ public class LoginFrag extends AppCompatActivity implements View.OnClickListener
             progressBarLogin.setVisibility(View.GONE);
             inputLogin.setEnabled(true);
             inputPass.setEnabled(true);
-            Toast.makeText(LoginFrag.this, s, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
             if (s.equals("Login OK!")) {
-                startContactList();
-                finish();
+                listener.loginOk("OK");
             }
         }
     }
@@ -203,7 +235,7 @@ public class LoginFrag extends AppCompatActivity implements View.OnClickListener
                     String jsonResponse = response.body().string();
                     Log.d("REGISTRATION", jsonResponse);
                     AuthResponse authResponse = gson.fromJson(jsonResponse, AuthResponse.class);
-                    SharedPreferences sPref = getSharedPreferences("AUTH", MODE_PRIVATE);
+                    SharedPreferences sPref = context.getSharedPreferences("AUTH", Context.MODE_PRIVATE);
                     SharedPreferences.Editor editor = sPref.edit();
                     editor.putString("TOKEN", authResponse.getToken());
                     editor.putString("LOGIN", login);
@@ -231,17 +263,10 @@ public class LoginFrag extends AppCompatActivity implements View.OnClickListener
             inputLogin.setEnabled(true);
             inputPass.setEnabled(true);
             progressBarLogin.setVisibility(View.GONE);
-            Toast.makeText(LoginFrag.this, s, Toast.LENGTH_SHORT).show();
+            Toast.makeText(context, s, Toast.LENGTH_SHORT).show();
             if (s.equals("Registration OK!")) {
-                startContactList();
-                finish();
+                listener.loginOk("OK");
             }
         }
-    }
-
-
-    private void startContactList() {
-        Intent intent = new Intent("contact.list.http.dan");
-        startActivity(intent);
     }
 }
