@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -26,14 +25,8 @@ import com.roll.clientserverhttp_fragments.entities.Contacts;
 import com.roll.clientserverhttp_fragments.entities.User;
 import com.roll.clientserverhttp_fragments.model.CallbackListener;
 import com.roll.clientserverhttp_fragments.model.HttpProvider;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 public class ContactListFrag extends Fragment implements ContactAdapter.ViewClickListener {
 
@@ -126,33 +119,15 @@ public class ContactListFrag extends Fragment implements ContactAdapter.ViewClic
         @Override
         protected String doInBackground(Void... params) {
             String result = "Get all contacts, OK!";
-
-            Request request = new Request.Builder()
-                    .header("Authorization", token)
-                    .url(HttpProvider.BASE_URL + "/contactsarray")
-                    .get()
-                    .build();
-
-            OkHttpClient client = new OkHttpClient();
-            client.setReadTimeout(15, TimeUnit.SECONDS);
-            client.setConnectTimeout(15, TimeUnit.SECONDS);
-
             try {
-                Response response = client.newCall(request).execute();
-                if (response.code() < 400) {
-                    String jsonResponse = response.body().string();
-                    Log.d("Get all contacts", jsonResponse);
-                    contacts = new Gson().fromJson(jsonResponse, Contacts.class);
-                } else if (response.code() == 401) {
-                    result = "Wrong authorization! empty token!";
-                } else {
-                    String jsonResponse = response.body().string();
-                    Log.d("Get all contacts", jsonResponse);
-                    result = "Server ERROR!";
-                }
+                String jsonResponse = HttpProvider.getInstance().getAll(token);
+                contacts = new Gson().fromJson(jsonResponse, Contacts.class);
             } catch (IOException e) {
                 e.printStackTrace();
                 result = "Connection ERROR!";
+            } catch (Exception e) {
+                e.printStackTrace();
+                result = e.getMessage();
             }
             return result;
         }
@@ -208,36 +183,15 @@ public class ContactListFrag extends Fragment implements ContactAdapter.ViewClic
         @Override
         protected String doInBackground(Void... params) {
             String result = "Delete all contacts, OK!";
-
-            MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
-            RequestBody body = RequestBody.create(mediaType, "");
-
-            Request request = new Request.Builder()
-                    .header("Authorization", token)
-                    .url(HttpProvider.BASE_URL + "/clearContactsList")
-                    .post(body)
-                    .build();
-
-            OkHttpClient client = new OkHttpClient();
-            client.setReadTimeout(15, TimeUnit.SECONDS);
-            client.setConnectTimeout(15, TimeUnit.SECONDS);
-
             try {
-                Response response = client.newCall(request).execute();
-                if (response.code() < 400) {
-                    String jsonResponse = response.body().string();
-                    Log.d("Del all contacts", jsonResponse);
-                    contacts.getContacts().clear();
-                } else if (response.code() == 401) {
-                    result = "Wrong authorization! empty token!";
-                } else {
-                    String jsonResponse = response.body().string();
-                    Log.d("Del all contacts", jsonResponse);
-                    result = "Server ERROR!";
-                }
+                String jsonResponse = HttpProvider.getInstance().deleteAll(token);
+                contacts.getContacts().clear();
             } catch (IOException e) {
                 e.printStackTrace();
                 result = "Connection ERROR!";
+            } catch (Exception e) {
+                e.printStackTrace();
+                result = e.getMessage();
             }
             return result;
         }
