@@ -54,4 +54,29 @@ public class HttpProvider {
         }
         return result;
     }
+
+    public String logon(String jsonBody) throws Exception {
+        String result = "";
+        MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
+        RequestBody body = RequestBody.create(mediaType, jsonBody);
+        Request request = new Request.Builder()
+                .url(HttpProvider.BASE_URL + "/login")
+                .post(body)
+                .build();
+        OkHttpClient client = new OkHttpClient();
+        client.setReadTimeout(15, TimeUnit.SECONDS);
+        client.setConnectTimeout(15, TimeUnit.SECONDS);
+        Response response = client.newCall(request).execute();
+        if (response.code() < 400) {
+            result = response.body().string();
+            Log.d("LOGIN", result);
+        } else if (response.code() == 401) {
+            throw new Exception("Wrong login or password!");
+        } else {
+            String error = response.body().string();
+            Log.d("LOGIN ERROR", error);
+            throw new Exception("Server ERROR!");
+        }
+        return result;
+    }
 }
