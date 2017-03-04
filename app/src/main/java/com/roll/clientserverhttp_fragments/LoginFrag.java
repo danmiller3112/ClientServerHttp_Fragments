@@ -215,40 +215,21 @@ public class LoginFrag extends Fragment implements View.OnClickListener {
             Auth auth = new Auth(login, pass);
             String jsonBody = gson.toJson(auth);
 
-            MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
-            RequestBody body = RequestBody.create(mediaType, jsonBody);
-
-            Request request = new Request.Builder()
-                    .url(HttpProvider.BASE_URL + "/registration")
-                    .post(body)
-                    .build();
-
-            OkHttpClient client = new OkHttpClient();
-            client.setReadTimeout(15, TimeUnit.SECONDS);
-            client.setConnectTimeout(15, TimeUnit.SECONDS);
-
             try {
-                Response response = client.newCall(request).execute();
-                if (response.code() < 400) {
-                    String jsonResponse = response.body().string();
-                    Log.d("REGISTRATION", jsonResponse);
-                    AuthResponse authResponse = gson.fromJson(jsonResponse, AuthResponse.class);
-                    SharedPreferences sPref = context.getSharedPreferences("AUTH", Context.MODE_PRIVATE);
-                    SharedPreferences.Editor editor = sPref.edit();
-                    editor.putString("TOKEN", authResponse.getToken());
-                    editor.putString("LOGIN", login);
-                    editor.putString("PASS", pass);
-                    editor.commit();
-                } else if (response.code() == 409) {
-                    result = "User already exist!";
-                } else {
-                    String jsonResponse = response.body().string();
-                    Log.d("REGISTRATION ERROR", jsonResponse);
-                    result = "Server ERROR!";
-                }
+                String jsonResponse = HttpProvider.getInstance().registration(jsonBody);
+                AuthResponse authResponse = gson.fromJson(jsonResponse, AuthResponse.class);
+                SharedPreferences sPref = context.getSharedPreferences("AUTH", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sPref.edit();
+                editor.putString("TOKEN", authResponse.getToken());
+                editor.putString("LOGIN", login);
+                editor.putString("PASS", pass);
+                editor.commit();
             } catch (IOException e) {
                 e.printStackTrace();
                 result = "Connection ERROR!";
+            } catch (Exception e) {
+                e.printStackTrace();
+                result = e.getMessage();
             }
             return result;
         }
