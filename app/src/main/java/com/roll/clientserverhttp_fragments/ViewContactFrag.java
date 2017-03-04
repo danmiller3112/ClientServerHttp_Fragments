@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,14 +21,8 @@ import com.google.gson.Gson;
 import com.roll.clientserverhttp_fragments.entities.User;
 import com.roll.clientserverhttp_fragments.model.CallbackListener;
 import com.roll.clientserverhttp_fragments.model.HttpProvider;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
 
 import java.io.IOException;
-import java.util.concurrent.TimeUnit;
 
 public class ViewContactFrag extends Fragment {
 
@@ -147,38 +140,14 @@ public class ViewContactFrag extends Fragment {
         @Override
         protected String doInBackground(Void... params) {
             String result = "Edit OK!";
-
             userJson = new Gson().toJson(new User(name, email, phone, desc, user.getContactId()));
-
-            MediaType mediaType = MediaType.parse("application/json; charset=utf-8");
-            RequestBody body = RequestBody.create(mediaType, userJson);
-
-            Request request = new Request.Builder()
-                    .header("Authorization", token)
-                    .url(HttpProvider.BASE_URL + "/setContact")
-                    .post(body)
-                    .build();
-
-            OkHttpClient client = new OkHttpClient();
-            client.setReadTimeout(15, TimeUnit.SECONDS);
-            client.setConnectTimeout(15, TimeUnit.SECONDS);
-
             try {
-                Response response = client.newCall(request).execute();
-                if (response.code() < 400) {
-                    String jsonResponse = response.body().string();
-                    Log.d("EDIT", jsonResponse);
-
-                } else if (response.code() == 401) {
-                    result = "Wrong authorization! empty token!";
-                } else {
-                    String jsonResponse = response.body().string();
-                    Log.d("EDIT ERROR", jsonResponse);
-                    result = "Server ERROR!";
-                }
+                String jsonResponse = HttpProvider.getInstance().edit(token, userJson);
             } catch (IOException e) {
                 e.printStackTrace();
                 result = "Connection ERROR!";
+            } catch (Exception e) {
+                e.printStackTrace();
             }
             return result;
         }
@@ -193,5 +162,4 @@ public class ViewContactFrag extends Fragment {
             }
         }
     }
-
 }
